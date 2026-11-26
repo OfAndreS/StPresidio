@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+import altair as alt
+import pandas as pd
 import streamlit as st
 
 from pystslides import (
@@ -341,24 +343,8 @@ with Presentation(
     # 3.0 Funcionamento
     deck.topic("03 ) Funcionamento")
 
-    # Diagrama de fluxo entre Analyzer e Anonymizer
-    deck.mermaid(
-        """
-        flowchart LR
+    deck.image(DATA_DIR / "detection_flow.gif")
 
-            A[<b>Analyzer</b><br/>Detecção & Classificação PII]
-            B[<b>Anonymizer</b><br/>Mascaramento & Criptografia]
-
-            T([Texto]) -.-> A
-            I([Imagem]) -.-> A
-            D([Tabela]) -.-> A
-
-            A --> B
-
-            B --> S[/Dados Protegidos/]
-        """,
-        border="none",
-    )
 
     # 3.1 Principais Funções
     deck.topic("3.1 ) Principais Funções")
@@ -478,6 +464,235 @@ with Presentation(
         output="My phone number is +1 305 555-****.",
         border="black",
         output_border="grey",
+    )
+
+    deck.split_slide(
+        "Diagrama de Funcionamento",
+        (
+            "Portanto, o Microsoft Presidio funciona passando dados brutos sem muito pré-processamento"
+            "para um método de análise e posteriormente para um método de anonimização"
+        ),
+        media="timeline_milestones_animated.svg",
+        media_position="right",
+        media_vertical_align="center",
+    )
+
+    # Diagrama de fluxo entre Analyzer e Anonymizer
+    deck.mermaid(
+        """
+        flowchart LR
+
+            A[<b>Analyzer</b><br/>Detecção & Classificação PII]
+            B[<b>Anonymizer</b><br/>Mascaramento & Criptografia]
+
+            T([Texto]) -.-> A
+            I([Imagem]) -.-> A
+            D([Tabela]) -.-> A
+
+            A --> B
+
+            B --> S[/Dados Protegidos/]
+        """,
+        border="black",
+    )
+
+    # 3.2 Benchmark de Modelos NER — Qualidade (F2-score) vs. Tempo de Execução
+    deck.topic("3.2 ) Benchmark de Modelos NER")
+    deck.split_slide(
+        "Desempenho vs. Custo Computacional",
+        (
+            "O Microsoft Presidio permite escolher o motor de reconhecimento de "
+            "entidades (NER) conforme o cenário de uso. A métrica F2 dá peso "
+            "maior à revocação (recall), priorizando não deixar dados sensíveis "
+            "passarem despercebidos, enquanto os tempos de treino e inferência "
+            "orientam a escolha entre precisão máxima e baixa latência."
+        ),
+        media="ml_training_animated.svg",
+        media_position="left",
+        media_vertical_align="center",
+    )
+
+    ordem_modelos = [
+        "Flair Emb + GloVe",
+        "Flair+BERT",
+        "spaCy+FastText",
+        "spaCy fine-tuned",
+        "spaCy 2.2.0",
+        "spaCy 2.1.0",
+        "CRF",
+    ]
+    ordem_metricas = [
+        "Localização (F2)",
+        "Organização (F2)",
+        "Pessoa (F2)",
+        "PII Geral (F2)",
+    ]
+    dados_f2 = pd.DataFrame(
+        [
+            {"Modelo": "Flair Emb + GloVe", "Métrica": "Localização (F2)", "F2": 88.7},
+            {"Modelo": "Flair Emb + GloVe", "Métrica": "Organização (F2)", "F2": 86.1},
+            {"Modelo": "Flair Emb + GloVe", "Métrica": "Pessoa (F2)", "F2": 95.0},
+            {"Modelo": "Flair Emb + GloVe", "Métrica": "PII Geral (F2)", "F2": 92.3},
+            {"Modelo": "Flair+BERT", "Métrica": "Localização (F2)", "F2": 88.8},
+            {"Modelo": "Flair+BERT", "Métrica": "Organização (F2)", "F2": 95.0},
+            {"Modelo": "Flair+BERT", "Métrica": "Pessoa (F2)", "F2": 96.3},
+            {"Modelo": "Flair+BERT", "Métrica": "PII Geral (F2)", "F2": 91.4},
+            {"Modelo": "spaCy+FastText", "Métrica": "Localização (F2)", "F2": 77.1},
+            {"Modelo": "spaCy+FastText", "Métrica": "Organização (F2)", "F2": 65.2},
+            {"Modelo": "spaCy+FastText", "Métrica": "Pessoa (F2)", "F2": 80.7},
+            {"Modelo": "spaCy+FastText", "Métrica": "PII Geral (F2)", "F2": 84.9},
+            {"Modelo": "spaCy fine-tuned", "Métrica": "Localização (F2)", "F2": 77.5},
+            {"Modelo": "spaCy fine-tuned", "Métrica": "Organização (F2)", "F2": 58.2},
+            {"Modelo": "spaCy fine-tuned", "Métrica": "Pessoa (F2)", "F2": 80.5},
+            {"Modelo": "spaCy fine-tuned", "Métrica": "PII Geral (F2)", "F2": 85.5},
+            {"Modelo": "spaCy 2.2.0", "Métrica": "Localização (F2)", "F2": 82.8},
+            {"Modelo": "spaCy 2.2.0", "Métrica": "Organização (F2)", "F2": 58.3},
+            {"Modelo": "spaCy 2.2.0", "Métrica": "Pessoa (F2)", "F2": 83.1},
+            {"Modelo": "spaCy 2.2.0", "Métrica": "PII Geral (F2)", "F2": 85.4},
+            {"Modelo": "spaCy 2.1.0", "Métrica": "Localização (F2)", "F2": 81.1},
+            {"Modelo": "spaCy 2.1.0", "Métrica": "Organização (F2)", "F2": 57.5},
+            {"Modelo": "spaCy 2.1.0", "Métrica": "Pessoa (F2)", "F2": 81.5},
+            {"Modelo": "spaCy 2.1.0", "Métrica": "PII Geral (F2)", "F2": 84.3},
+            {"Modelo": "CRF", "Métrica": "Localização (F2)", "F2": 79.0},
+            {"Modelo": "CRF", "Métrica": "Organização (F2)", "F2": 57.4},
+            {"Modelo": "CRF", "Métrica": "Pessoa (F2)", "F2": 76.3},
+            {"Modelo": "CRF", "Métrica": "PII Geral (F2)", "F2": 78.9},
+        ]
+    )
+
+    selecao_metrica = alt.selection_point(fields=["Métrica"], bind="legend")
+    grafico_f2 = (
+        alt.Chart(dados_f2)
+        .mark_bar(cornerRadiusTopRight=4, cornerRadiusBottomRight=4)
+        .encode(
+            x=alt.X(
+                "F2:Q",
+                title="Pontuação F2 (%)",
+                scale=alt.Scale(domain=[0, 100]),
+                axis=alt.Axis(
+                    values=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                    labelExpr="datum.value + '%'",
+                    gridColor="#e5e7eb",
+                    domainColor="#000000",
+                    tickColor="#000000",
+                ),
+            ),
+            y=alt.Y(
+                "Modelo:N",
+                sort=ordem_modelos,
+                title=None,
+                scale=alt.Scale(paddingInner=0.22, paddingOuter=0.12),
+                axis=alt.Axis(
+                    labelLimit=180,
+                    domain=False,
+                    ticks=False,
+                    labelPadding=12,
+                ),
+            ),
+            yOffset=alt.YOffset(
+                "Métrica:N",
+                sort=ordem_metricas,
+                scale=alt.Scale(paddingInner=0.12),
+            ),
+            color=alt.Color(
+                "Métrica:N",
+                sort=ordem_metricas,
+                scale=alt.Scale(
+                    domain=ordem_metricas,
+                    range=["#579568", "#3f7bde", "#e19b4d", "#000000"],
+                ),
+                legend=alt.Legend(
+                    title=None,
+                    orient="bottom",
+                    direction="horizontal",
+                    symbolType="square",
+                    symbolSize=120,
+                    labelFontSize=13,
+                    padding=14,
+                ),
+            ),
+            opacity=alt.condition(selecao_metrica, alt.value(1.0), alt.value(0.18)),
+            tooltip=[
+                alt.Tooltip("Modelo:N", title="Modelo"),
+                alt.Tooltip("Métrica:N", title="Métrica"),
+                alt.Tooltip("F2:Q", title="F2-score (%)", format=".1f"),
+            ],
+        )
+        .add_params(selecao_metrica)
+        .properties(
+            title=alt.TitleParams(
+                text="Pontuação F2 para Diferentes Modelos",
+                subtitle="Clique na legenda para destacar uma métrica • Passe o cursor sobre as barras para ver os valores",
+                anchor="start",
+                font="DM Sans",
+                fontSize=20,
+                fontWeight=500,
+                color="#000000",
+                subtitleFont="DM Sans",
+                subtitleFontSize=13,
+                subtitleColor="#52525b",
+                offset=16,
+            ),
+            height=480,
+        )
+        .configure(
+            background="#ffffff",
+            font="DM Sans",
+            padding={"left": 12, "right": 20, "top": 14, "bottom": 10},
+        )
+        .configure_view(stroke=None)
+        .configure_axis(
+            labelFont="DM Sans",
+            labelFontSize=13,
+            labelColor="#18181b",
+            titleFont="DM Sans",
+            titleFontSize=13,
+            titleFontWeight=500,
+            titleColor="#52525b",
+            titlePadding=10,
+        )
+        .configure_legend(
+            labelFont="DM Sans",
+            labelColor="#18181b",
+        )
+    )
+
+    with deck.output_container(border="black"):
+        st.altair_chart(grafico_f2, use_container_width=True, theme=None)
+
+    tabela_tempos = {
+        "Modelo": ["Flair", "spaCy", "CRF"],
+        "Tempo de Resposta na Inferência (ms)": ["111,11 ms", "9,62 ms", "0,45 ms"],
+        "Tempo de Treino (horas)": ["~120 h", "~18 h", "~0,5 h"],
+    }
+    destaques_tempos = {
+        ("Tempo de Resposta na Inferência (ms)", 0): [
+            HighlightSpan(0, 9, "MAIS LENTO", level=HighlightLevel.LOW)
+        ],
+        ("Tempo de Resposta na Inferência (ms)", 1): [
+            HighlightSpan(0, 7, "EQUILIBRADO", level=HighlightLevel.MEDIUM)
+        ],
+        ("Tempo de Resposta na Inferência (ms)", 2): [
+            HighlightSpan(0, 7, "MAIS RÁPIDO", level=HighlightLevel.HIGH)
+        ],
+        ("Tempo de Treino (horas)", 0): [
+            HighlightSpan(0, 6, "ALTO CUSTO", level=HighlightLevel.LOW)
+        ],
+        ("Tempo de Treino (horas)", 1): [
+            HighlightSpan(0, 5, "MODERADO", level=HighlightLevel.MEDIUM)
+        ],
+        ("Tempo de Treino (horas)", 2): [
+            HighlightSpan(0, 6, "BAIXO CUSTO", level=HighlightLevel.HIGH)
+        ],
+    }
+    deck.styled_table(tabela_tempos, highlights=destaques_tempos)
+
+    deck.callout(
+        "Medições realizadas em 1 instância NC6 na Azure: 6 vCPU, 56 GiB de "
+        "memória RAM e meia GPU NVIDIA Tesla K80 (12 GiB de memória de GPU).",
+        title="Ambiente do Benchmark (Azure NC6)",
+        variant="info",
+        border="grey",
     )
 
     deck.divider()
