@@ -469,8 +469,7 @@ with Presentation(
     deck.split_slide(
         "Diagrama de Funcionamento",
         (
-            "Portanto, o Microsoft Presidio funciona passando dados brutos sem muito pré-processamento"
-            "para um método de análise e posteriormente para um método de anonimização"
+            "O Microsoft Presidio processa dados brutos com mínimo pré-processamento, enviando-os primeiramente para um método de análise e, depois, para a anonimização."
         ),
         media="timeline_milestones_animated.svg",
         media_position="right",
